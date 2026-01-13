@@ -1,0 +1,18 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <linearGradient id="g1" x1="0" x2="1">
+      <stop offset="0" stop-color="#6366F1" />
+      <stop offset="1" stop-color="#EC4899" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" rx="24" fill="url(#g1)" opacity="0.12" />
+  <g transform="translate(80,60)">
+    <circle cx="240" cy="180" r="110" fill="#fff" opacity="0.9" />
+    <path d="M160 220c40-40 160-40 200 0" stroke="#111827" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.08"/>
+    <g transform="translate(180,90)">
+      <rect x="-40" y="0" width="80" height="110" rx="20" fill="#111827" opacity="0.9"/>
+      <rect x="-24" y="-18" width="48" height="36" rx="10" fill="#F3F4F6"/>
+    </g>
+  </g>
+  <text x="40" y="520" fill="#374151" font-size="18">Ilustração estilizada — substitua por foto real</text>
+</svg>
