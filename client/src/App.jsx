@@ -1,299 +1,411 @@
 import React, { useState, useEffect } from 'react'
-import heroCam from './assets/optimized/hero1.jpg'
-import heroCan from './assets/optimized/hero2.jpg'
-import Gallery from './components/Gallery'
-import img1 from './assets/gallery/3-233x300.png'
-import img2 from './assets/gallery/2-233x300.png'
-import img3 from './assets/gallery/4-233x300.png'
-import img4 from './assets/gallery/6-233x300.png'
-import img5 from './assets/gallery/7-233x300.png'
-import img6 from './assets/gallery/8-233x300.png'
-import img7 from './assets/gallery/5-233x300.png'
-import img8 from './assets/gallery/9-233x300.png'
-import img9 from './assets/gallery/12-1-233x300.png'
 
-function useReveal() {
-  useEffect(() => {
-    const els = document.querySelectorAll('[data-reveal]')
-    const obs = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) e.target.classList.add('visible')
-        })
-      },
-      { threshold: 0.12 }
-    )
-    els.forEach((el) => obs.observe(el))
-    return () => obs.disconnect()
-  }, [])
-}
+// IMPORTANTE: Se usares imagem local, importa assim:
+// import bgHero from './assets/bg-barbearia.jpg' 
+import logoBarber from './assets/logo/image-removebg-preview.png' // Confirma se o caminho está certo
+
+// Imagens da Galeria (Mantive as tuas importações)
+import gal1 from './assets/gallery/3-233x300.png'
+import gal2 from './assets/gallery/2-233x300.png'
+import gal3 from './assets/gallery/4-233x300.png'
+import gal4 from './assets/gallery/6-233x300.png'
+import gal5 from './assets/gallery/7-233x300.png'
+import gal6 from './assets/gallery/8-233x300.png'
+import gal7 from './assets/gallery/5-233x300.png'
+import gal8 from './assets/gallery/9-233x300.png'
+import gal9 from './assets/gallery/12-1-233x300.png'
+import bgHero from './assets/Barbearia/stefan-schauberger-R4NC2ChuZSc-unsplash.jpg' // Imagem de fundo do hero
+import interiorbarb from './assets/Barbearia/frantisek-canik-k6RsU8om2UE-unsplash.jpg' // Imagem do interior da barbearia
+import victormatos from './assets/Barbeiros/victormatos.jpg' // Imagem da equipa
+import afonsomendonca from './assets/Barbeiros/afonsomendonca.jpg' // Imagem da equipa
+import inaciopinto from './assets/Barbeiros/inaciopinto.jpg' // Imagem da equipa
+import joaomiranda from './assets/Barbeiros/joaomiranda.jpg' // Imagem da equipa  
+import jota from './assets/Barbeiros/jota.jpg' // Imagem da equipa
+import pedrobranco from './assets/Barbeiros/pedrobranco.jpg' // Imagem da equipa
+// A imagem nova para o separador (Parallax)
+import dividerImg from './assets/Barbearia/ivan-cortez-7AFDiiYumkE-unsplash.jpg'
+
+
+// Componente Separador Ziguezague (SVG)
+const ZigZag = () => (
+  <svg className="w-full h-4 text-gray-800 my-4" preserveAspectRatio="none" viewBox="0 0 100 10">
+    <path d="M0 5 L2 0 L4 5 L6 0 L8 5 L10 0 L12 5 L14 0 L16 5 L18 0 L20 5 L22 0 L24 5 L26 0 L28 5 L30 0 L32 5 L34 0 L36 5 L38 0 L40 5 L42 0 L44 5 L46 0 L48 5 L50 0 L52 5 L54 0 L56 5 L58 0 L60 5 L62 0 L64 5 L66 0 L68 5 L70 0 L72 5 L74 0 L76 5 L78 0 L80 5 L82 0 L84 5 L86 0 L88 5 L90 0 L92 5 L94 0 L96 5 L98 0 L100 5" stroke="currentColor" strokeWidth="1" fill="none" vectorEffect="non-scaling-stroke" />
+  </svg>
+)
 
 export default function App() {
-  const [open, setOpen] = useState(false)
-  const [location, setLocation] = useState('Camacha')
-  const [heroIndex, setHeroIndex] = useState(0)
-  useReveal()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState('')
 
+  // --- LÓGICA DE SCROLL ---
   useEffect(() => {
-    const interval = setInterval(() => {
-      setHeroIndex((i) => (i + 1) % 2)
-    }, 5000)
-    return () => clearInterval(interval)
-  }, [])
+    const handleScroll = () => {
+      // Reveal Animation
+      const reveals = document.querySelectorAll('.reveal')
+      for (let i = 0; i < reveals.length; i++) {
+        const windowHeight = window.innerHeight
+        const elementTop = reveals[i].getBoundingClientRect().top
+        if (elementTop < windowHeight - 100) {
+          reveals[i].classList.add('active')
+        }
+      }
 
-  useEffect(() => {
-    const path = window.location.pathname.toLowerCase()
-    setLocation(path.includes('canico') ? 'Canico' : 'Camacha')
-    const onPop = () => {
-      const p = window.location.pathname.toLowerCase()
-      setLocation(p.includes('canico') ? 'Canico' : 'Camacha')
+      // Menu Ativo
+      const sections = ['sobre', 'equipa', 'servicos', 'galeria', 'contactos']
+      let current = ''
+      sections.forEach(section => {
+        const element = document.getElementById(section)
+        if (element) {
+          const sectionTop = element.offsetTop
+          if (window.scrollY >= sectionTop - 250) { 
+            current = section
+          }
+        }
+      })
+      setActiveSection(current)
     }
-    window.addEventListener('popstate', onPop)
-    return () => window.removeEventListener('popstate', onPop)
+
+    window.addEventListener('scroll', handleScroll)
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const navigateTo = (page) => {
-    const path = page === 'Canico' ? '/canico' : '/camacha'
-    window.history.pushState({}, '', path)
-    setLocation(page)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+  const galleryImages = [gal1, gal2, gal3, gal4, gal5, gal6, gal7, gal8, gal9]
 
-  const locations = {
-    Camacha: {
-      name: 'Camacha',
-      phone: '+351 291 618 236',
-      address: 'Camacha Shopping, Piso 0, Loja 06 — Camacha',
-      noonaUrl: 'https://noona.io/your-salon'
+  // --- DADOS DA EQUIPA (Textos Personalizados) ---
+  const teamCanico = [
+    { 
+      name: 'PEDRO BRANCO', 
+      img: pedrobranco, 
+      role: 'BARBER',
+      desc: 'O Pedro traz uma visão contemporânea à barbearia. Mestre nos degradês e cortes texturizados, a sua cadeira é o lugar onde o estilo urbano encontra a precisão técnica. Focado sempre em elevar a autoestima de quem o procura.' 
     },
-    Canico: {
-      name: 'Caniço',
-      phone: '+351 291 618 236',
-      address: 'Edifício Plaza, Estr. do Garajau BL-2 R/C Loja G — Caniço',
-      noonaUrl: 'https://noona.io/your-salon-canico'
-    }
-  }
-
-  const locData = locations[location]
-
-  const services = [
-    { title: 'Corte Irreverente', price: '14€', icon: '✂️' },
-    { title: 'Corte Clássico', price: '10€', icon: '💈' },
-    { title: 'Corte Clássico Moderno', price: '15€', icon: '🎨' },
-    { title: 'Harmonização de Barba', price: '10€', icon: '🧔' },
-    { title: 'Descoloração', price: '30€', icon: '💫' },
-    { title: 'Corte Kids', price: '11€', icon: '👦' }
+    { 
+      name: 'VICTOR', 
+      img: victormatos, 
+      role: 'BARBER',
+      desc: 'Com uma técnica apurada e um gosto pelo clássico, o Victor é o especialista em cortes de tesoura e barbas tradicionais. A sua atenção ao detalhe garante que cada cliente saia com um visual impecável e duradouro.' 
+    },
+    { 
+      name: 'AFONSO', 
+      img: afonsomendonca, 
+      role: 'BARBER',
+      desc: 'Jovem talento com uma paixão inesgotável pela arte. O Afonso está sempre a par das últimas tendências mundiais, trazendo para o Caniço os cortes mais arrojados e modernos. Perfeccionista por natureza.' 
+    },
   ]
 
-  const barbers = [
-    { name: 'Miguel Silva', role: 'Founder & Master Barber', desc: 'Especializado em cortes clássicos e modernos.', img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop&crop=faces' },
-    { name: 'João Costa', role: 'Barber Senior', desc: 'Especialista em harmonização de barba.', img: 'https://images.unsplash.com/photo-1545996124-4c2f8c9f4f3c?q=80&w=800&auto=format&fit=crop&crop=faces' },
-    { name: 'Rui Pereira', role: 'Stylist & Artist', desc: 'Criatividade e inovação nos cortes.', img: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=800&auto=format&fit=crop&crop=faces' }
+  const teamCamacha = [
+    { 
+      name: 'JOTA', 
+      img: jota, 
+      role: 'MASTER BARBER',
+      desc: 'A alma da Barbearia J. Com anos de experiência e uma tesoura que conta histórias, o Jota combina a liderança com a arte de bem receber. Especialista em visagismo, sabe exatamente o que funciona para cada rosto.' 
+    },
+    { 
+      name: 'INÁCIO', 
+      img: inaciopinto, 
+      role: 'BARBER',
+      desc: 'O Inácio representa a "Old School" com um twist moderno. Especialista no ritual da barba com toalha quente e navalha, proporciona aquela experiência de relaxamento que todo o homem merece. Rigor e excelência.' 
+    },
+    { 
+      name: 'JOÃO', 
+      img: joaomiranda, 
+      role: 'BARBER',
+      desc: 'Simpatia e técnica definem o João. A sua prioridade é entender o cliente e transformar o desejo em realidade. Versátil, domina tanto os cortes clássicos como os designs mais complexos.' 
+    },
   ]
 
-  const testimonials = [
-    { name: 'Sónia Loureiro', text: 'Ótimos profissionais, ótimo ambiente e simpatia.' },
-    { name: 'Tiago Dias', text: 'Experiência 5*, recomendo vivamente. Obrigado 😊' },
-    { name: 'Nuno Duarte', text: 'Espaço muito agradável, ambiente fantástico, profissionais muito bons.' }
+  // --- DADOS SERVIÇOS ---
+  const servicesList = [
+    { name: 'Corte Barbeiro', time: '30 min', price: '13,00 €' },
+    { name: 'Corte Expresso', time: '10 min', price: '9,00 €' },
+    { name: 'Corte Criança até 8 anos', time: '30 min', price: '12,00 €' },
+    { name: 'Barba', time: '15 min', price: '8,00 €' },
+    { name: 'Corte Barbeiro + Barba', time: '60 min', price: '21,00 €' },
+    { name: 'Corte + Tratamento Pele', time: '60 min', price: '22,00 €' },
+    { name: 'Ritual Completo (Cabelo+Barba+Pele)', time: '90 min', price: '28,00 €' },
   ]
-
-  const amenities = [
-    { icon: '📶', name: 'Wifi Livre', desc: 'Conexão rápida' },
-    { icon: '🎨', name: 'Old & New School', desc: 'Decoração única' },
-    { icon: '📺', name: 'TV/Streaming', desc: 'Entretenimento' },
-    { icon: '🍹', name: 'Bar', desc: 'Bebidas' },
-    { icon: '🎮', name: 'Videojogos', desc: 'Diversão' },
-    { icon: '⏰', name: 'Horário Alargado', desc: 'Aberto até 22h' }
-  ]
-
-  const whyUs = [
-    { icon: '📍', title: 'Boa Localização', desc: 'Fácil acesso' },
-    { icon: '🚗', title: 'Estacionamento', desc: 'Bastante lugar' },
-    { icon: '👨‍⚕️', title: 'Profissionais', desc: 'Equipa competente' },
-    { icon: '🏡', title: 'Espaço Acolhedor', desc: 'Preço justo' },
-    { icon: '✨', title: 'Personalizado', desc: 'Serviço 100%' }
-  ]
-
-  const galleryImages = [img1, img2, img3, img4, img5, img6, img7, img8, img9]
-  const heroSrc = location === 'Canico' ? heroCan : heroCam
 
   return (
-    <div className="min-h-screen theme-dark text-gray-100 relative overflow-hidden">
-      <header className="fixed-top bg-black/60 backdrop-blur-md relative z-40">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="text-xl font-black text-yellow-400">💈</div>
-            <span className="font-bold text-lg text-gray-100">BarbeariaJ</span>
-          </div>
-          <nav className="hidden md:flex items-center gap-8">
-            <a href="#sobre" className="hover:text-yellow-300 transition">Sobre</a>
-            <a href="#servicos" className="hover:text-yellow-300 transition">Serviços</a>
-            <a href="#galeria" className="hover:text-yellow-300 transition">Galeria</a>
-            <a href="#contato" className="hover:text-yellow-300 transition">Contacto</a>
-            <div className="flex items-center gap-2">
-              <button onClick={() => navigateTo('Camacha')} className={`px-3 py-1 rounded text-sm ${location === 'Camacha' ? 'bg-yellow-400 text-black font-bold' : 'bg-white/10'}`}>Camacha</button>
-              <button onClick={() => navigateTo('Canico')} className={`px-3 py-1 rounded text-sm ${location === 'Canico' ? 'bg-yellow-400 text-black font-bold' : 'bg-white/10'}`}>Caniço</button>
+    <div className="min-h-screen bg-[#0b0b0b] text-gray-100 overflow-x-hidden font-sans selection:bg-[#d4af37] selection:text-black">
+      
+      {/* --- HEADER --- */}
+      <header className="fixed w-full top-0 z-50 transition-all duration-300" 
+        style={{ 
+          height: '110px', 
+          background: 'rgba(0, 0, 0, 0.75)', 
+          backdropFilter: 'blur(10px)',
+          borderBottom: '1px solid rgba(212, 175, 55, 0.1)'
+        }}>
+        
+        <div className="container mx-auto px-4 h-full flex items-center justify-between">
+          <button onClick={() => setMenuOpen(!menuOpen)} className="lg:hidden text-2xl text-[#d4af37]">☰</button>
+
+          <div className="hidden lg:flex items-center justify-center w-full relative h-full">
+            <div className="flex gap-8 text-xs font-bold tracking-[0.2em] uppercase">
+              <a href="#sobre" className={`transition-all hover:scale-105 ${activeSection === 'sobre' ? 'text-[#d4af37]' : 'text-gray-300 hover:text-[#d4af37]'}`}>Sobre</a>
+              <a href="#equipa" className={`transition-all hover:scale-105 ${activeSection === 'equipa' ? 'text-[#d4af37]' : 'text-gray-300 hover:text-[#d4af37]'}`}>Equipa</a>
+              <a href="#servicos" className={`transition-all hover:scale-105 ${activeSection === 'servicos' ? 'text-[#d4af37]' : 'text-gray-300 hover:text-[#d4af37]'}`}>Serviços</a>
             </div>
-            <a href={locData.noonaUrl} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-yellow-400 text-black font-bold rounded hover:bg-yellow-300">Agendar</a>
-          </nav>
-          <div className="md:hidden">
-            <button onClick={() => setOpen(!open)} className="p-2 text-white">☰</button>
+
+            <div className="mx-12 relative group">
+              <a href="#">
+                <img src={logoBarber} alt="Logo" className="h-24 w-auto transition-transform duration-500 group-hover:scale-110 drop-shadow-[0_0_15px_rgba(212,175,55,0.2)]" />
+              </a>
+            </div>
+
+            <div className="flex gap-8 text-xs font-bold tracking-[0.2em] uppercase">
+              <a href="#galeria" className={`transition-all hover:scale-105 ${activeSection === 'galeria' ? 'text-[#d4af37]' : 'text-gray-300 hover:text-[#d4af37]'}`}>Galeria</a>
+              <a href="#contactos" className={`transition-all hover:scale-105 ${activeSection === 'contactos' ? 'text-[#d4af37]' : 'text-gray-300 hover:text-[#d4af37]'}`}>Contactos</a>
+            </div>
+
+            <div className="absolute right-0 flex flex-col gap-2 top-1/2 -translate-y-1/2">
+              <a href="https://noona.pt/barbeariajcanico/book" target="_blank" className="bg-transparent border border-[#d4af37] text-[#d4af37] px-4 py-1 text-[10px] font-bold uppercase hover:bg-[#d4af37] hover:text-black transition-all">Caniço</a>
+              <a href="https://noona.pt/barbeariajc/book" target="_blank" className="bg-[#d4af37] text-black px-4 py-1 text-[10px] font-bold uppercase hover:bg-white transition-all">Camacha</a>
+            </div>
           </div>
         </div>
-        {open && (
-          <div className="md:hidden bg-black/90 border-t border-white/10">
-            <div className="px-6 py-4 flex flex-col gap-3">
-              <a href="#sobre" onClick={() => setOpen(false)}>Sobre</a>
-              <a href="#servicos" onClick={() => setOpen(false)}>Serviços</a>
-              <a href="#galeria" onClick={() => setOpen(false)}>Galeria</a>
-              <a href="#contato" onClick={() => setOpen(false)}>Contacto</a>
-              <a href={locData.noonaUrl} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-yellow-400 text-black font-bold rounded text-center">Agendar</a>
-            </div>
-          </div>
+
+        {/* Mobile Menu */}
+        {menuOpen && (
+          <nav className="lg:hidden bg-black/95 p-6 flex flex-col gap-4 text-center border-t border-gray-800">
+            <a href="#sobre" onClick={() => setMenuOpen(false)}>Sobre</a>
+            <a href="#equipa" onClick={() => setMenuOpen(false)}>Equipa</a>
+            <a href="#servicos" onClick={() => setMenuOpen(false)}>Serviços</a>
+            <a href="#galeria" onClick={() => setMenuOpen(false)}>Galeria</a>
+            <a href="#contactos" onClick={() => setMenuOpen(false)}>Contactos</a>
+          </nav>
         )}
       </header>
 
-      <section className="hero-slider relative min-h-[90vh] overflow-hidden mt-16">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <img src={heroIndex === 0 ? heroSrc : heroSrc} alt="hero" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/40"></div>
-        </div>
-        <div className="relative z-10 h-full flex items-center justify-center text-center text-white px-6">
-          <div className="max-w-3xl">
-            <h1 className="text-5xl md:text-7xl font-black mb-4 leading-tight">Bem-vindo à BarbeariaJ</h1>
-            <p className="text-2xl md:text-3xl mb-4 font-light">Barbearia Urbana — {location}</p>
-            <p className="text-lg md:text-xl mb-8 text-gray-200">Qualidade, estilo e profissionalismo em cada corte.</p>
-            <div className="flex gap-4 justify-center flex-wrap">
-              <a href={locData.noonaUrl} target="_blank" rel="noopener noreferrer" className="px-8 py-4 bg-yellow-400 text-black font-bold rounded-lg hover:bg-yellow-300 transition text-lg">Agendar Agora</a>
-              <a href="#servicos" className="px-8 py-4 border-2 border-white text-white rounded-lg hover:bg-white/10 transition text-lg">Ver Serviços</a>
-            </div>
-          </div>
-        </div>
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-20">
-          <button onClick={() => setHeroIndex(0)} className={`w-3 h-3 rounded-full transition ${heroIndex === 0 ? 'bg-white' : 'bg-white/50'}`}></button>
-          <button onClick={() => setHeroIndex(1)} className={`w-3 h-3 rounded-full transition ${heroIndex === 1 ? 'bg-white' : 'bg-white/50'}`}></button>
+      {/* --- HERO --- */}
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 z-0" style={{ backgroundImage: `url(${bgHero})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed', filter: 'brightness(0.35)' }}></div>
+        <div className="relative z-10 text-center px-4 mt-20 reveal active">
+          <h2 className="text-[#d4af37] text-sm md:text-lg font-bold tracking-[0.5em] mb-4 uppercase">Estilo & Tradição</h2>
+          <h1 className="text-5xl md:text-8xl font-black text-white mb-6 tracking-tighter">BARBEARIA <span className="text-[#d4af37]">J</span></h1>
+          <a href="#contactos" className="border-b border-[#d4af37] pb-1 text-[#d4af37] hover:text-white transition-colors uppercase text-sm tracking-widest">Ver Localizações</a>
         </div>
       </section>
 
-      <main className="container mx-auto px-6 py-16 relative z-10">
-
-        <section id="sobre" className="py-12" data-reveal>
-          <h2 className="text-4xl font-black mb-8 text-center">A Nossa História</h2>
-          <div className="grid md:grid-cols-2 gap-8 items-center bg-white/5 p-8 rounded-lg">
-            <div>
-              <p className="text-gray-300 leading-relaxed mb-4 text-lg">BarbeariaJ nasce da ideia de conciliar o estilo NewSchool ao OldSchool. Inaugurada em 2019, é um espaço que se caracteriza por ter uma atmosfera alegre, descontraída e informal.</p>
-              <p className="text-gray-300 leading-relaxed text-lg">Desde cortes tradicionais até aos mais criativos, em BarbeariaJ podem contar sempre com profissionais capazes de tornar a vossa experiência numa memória inolvidável. 💈</p>
+      {/* --- SOBRE NÓS --- */}
+      <section id="sobre" className="py-32 bg-[#0b0b0b]">
+        <div className="container mx-auto px-6">
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div className="reveal flex justify-center md:justify-end">
+              <div className="relative max-w-sm">
+                 <div className="absolute -inset-4 border border-[#d4af37]/30 z-0"></div>
+                 <img src={interiorbarb} alt="Interior Barbearia" className="relative z-10 shadow-2xl grayscale hover:grayscale-0 transition-all duration-700" />
+              </div>
             </div>
-            <div className="flex gap-6 items-center justify-center">
-              <div className="text-6xl font-black text-yellow-400">2019</div>
-              <div className="border-l-4 border-yellow-400 pl-6"><p className="text-gray-400 text-lg">Ano de fundação com visão de criar um espaço único e memorável.</p></div>
-            </div>
-          </div>
-        </section>
-
-        <section id="servicos" className="py-12" data-reveal>
-          <h2 className="text-4xl font-black mb-8 text-center">Serviços & Preços</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {services.map((s, i) => (
-              <div key={i} className="bg-white/5 p-6 rounded-lg hover:bg-white/10 transition border border-white/10">
-                <div className="text-4xl mb-4">{s.icon}</div>
-                <h3 className="font-bold text-lg mb-2">{s.title}</h3>
-                <p className="text-yellow-400 font-bold text-2xl">{s.price}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="py-12" data-reveal>
-          <h2 className="text-4xl font-black mb-8 text-center">Testemunhos</h2>
-          <div className="grid sm:grid-cols-3 gap-6">
-            {testimonials.map((t, i) => (
-              <div key={i} className="bg-white/5 p-6 rounded-lg border border-white/10">
-                <p className="text-gray-300 mb-4 italic text-lg">"{t.text}"</p>
-                <div className="font-bold text-yellow-400">{t.name}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="py-12" data-reveal>
-          <h2 className="text-4xl font-black mb-8 text-center">Os Fundadores</h2>
-          <div className="grid sm:grid-cols-3 gap-8">
-            {barbers.map((b, i) => (
-              <div key={i} className="bg-white/5 rounded-lg overflow-hidden hover:shadow-2xl transition border border-white/10">
-                <div className="h-72 overflow-hidden bg-gray-700">
-                  <img src={b.img} alt={b.name} className="w-full h-full object-cover hover:scale-105 transition" />
-                </div>
-                <div className="p-6">
-                  <div className="font-bold text-lg mb-1">{b.name}</div>
-                  <div className="text-yellow-400 font-semibold text-sm mb-3">{b.role}</div>
-                  <p className="text-gray-400 text-sm">{b.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="py-12" data-reveal>
-          <h2 className="text-4xl font-black mb-8 text-center">O Nosso Espaço</h2>
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {amenities.map((a, i) => (
-              <div key={i} className="bg-white/5 p-6 rounded-lg text-center border border-white/10 hover:bg-white/10 transition">
-                <div className="text-5xl mb-4">{a.icon}</div>
-                <div className="font-bold text-lg mb-2">{a.name}</div>
-                <div className="text-sm text-gray-400">{a.desc}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="py-12" data-reveal>
-          <h2 className="text-4xl font-black mb-8 text-center">Porquê Cortar Connosco</h2>
-          <div className="grid sm:grid-cols-2 md:grid-cols-5 gap-4">
-            {whyUs.map((w, i) => (
-              <div key={i} className="bg-gradient-to-br from-yellow-400/10 to-transparent p-6 rounded-lg text-center border border-yellow-400/20 hover:border-yellow-400/50 transition">
-                <div className="text-4xl mb-3">{w.icon}</div>
-                <div className="font-bold text-sm mb-1">{w.title}</div>
-                <div className="text-xs text-gray-400">{w.desc}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <Gallery images={galleryImages} />
-
-        <section id="contato" className="py-12" data-reveal>
-          <h2 className="text-4xl font-black mb-8 text-center">Contactos & Localização</h2>
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white/5 p-8 rounded-lg text-center border border-white/10">
-              <div className="text-5xl mb-4">📞</div>
-              <div className="font-bold text-lg text-yellow-400 mb-2">Telefonar</div>
-              <a href={`tel:${locData.phone.replace(/\s|\+/g, '')}`} className="text-gray-300 hover:text-yellow-400 transition text-lg">{locData.phone}</a>
-            </div>
-            <div className="bg-white/5 p-8 rounded-lg text-center border border-white/10">
-              <div className="text-5xl mb-4">📍</div>
-              <div className="font-bold text-lg text-yellow-400 mb-2">{location}</div>
-              <p className="text-gray-400 text-sm leading-relaxed">{locData.address}</p>
-            </div>
-            <div className="bg-white/5 p-8 rounded-lg text-center border border-white/10">
-              <div className="text-5xl mb-4">⏰</div>
-              <div className="font-bold text-lg text-yellow-400 mb-2">Horário</div>
-              <p className="text-gray-400 text-sm leading-relaxed">{location === 'Camacha' ? 'Seg–Sex 10:00–19:00\nSáb 10:00–14:00\nDom: Encerrado' : 'Seg–Sex 10:00–19:00\nSáb 10:00–17:00\nDom: Encerrado'}</p>
+            <div className="reveal delay-200 text-left">
+              <h2 className="text-3xl font-bold mb-6 text-white uppercase tracking-wider">Mais do que um <span className="text-[#d4af37]">Corte</span></h2>
+              <p className="text-gray-400 leading-relaxed mb-6 font-light">
+                Fomos a primeira barbearia moderna a nascer na Madeira. Não vendemos apenas cortes de cabelo; vendemos autoestima e uma experiência clássica num ambiente pensado para o homem moderno.
+              </p>
             </div>
           </div>
-          <div className="bg-gradient-to-r from-yellow-400/10 to-transparent p-8 rounded-lg text-center border border-yellow-400/20">
-            <p className="text-gray-300 mb-6 text-lg">Pronto para um corte inesquecível? Agende connosco agora!</p>
-            <a href={locData.noonaUrl} target="_blank" rel="noopener noreferrer" className="px-8 py-4 bg-yellow-400 text-black font-bold rounded-lg hover:bg-yellow-300 transition inline-block text-lg">Agendar via Noona</a>
-          </div>
-        </section>
-
-      </main>
-
-      <footer className="bg-black/30 border-t border-white/10 py-8 relative z-10">
-        <div className="container mx-auto px-6 text-center text-sm text-gray-500">
-          <p>© {new Date().getFullYear()} BarbeariaJ — Corte connosco. Na ProStudio, a sua experiência ficará numa memória inolvidável. 💈</p>
-          <p className="mt-2">Desenvolvido com ❤️ para oferecer a melhor experiência</p>
         </div>
+      </section>
+
+      {/* --- SEPARADOR PARALLAX --- */}
+      <section className="relative h-[400px] flex items-center justify-center bg-fixed bg-center bg-cover" style={{ backgroundImage: `url(${dividerImg})` }}>
+         <div className="absolute inset-0 bg-black/60"></div>
+         <div className="relative z-10 text-center reveal">
+            <h3 className="text-4xl font-black text-white uppercase tracking-widest mb-4">True <span className="text-[#d4af37]">Gentlemen</span></h3>
+         </div>
+      </section>
+
+      {/* --- EQUIPA --- */}
+      <section id="equipa" className="py-32 bg-[#111]">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-24 reveal">
+             <h2 className="text-4xl font-black uppercase tracking-widest text-white">A Nossa <span className="text-[#d4af37]">Equipa</span></h2>
+          </div>
+
+          {/* Caniço Team */}
+          <div className="mb-32 reveal">
+            <div className="flex items-center justify-center mb-12">
+               <div className="h-px bg-[#d4af37] w-12 mr-4"></div>
+               <h3 className="text-2xl font-bold text-white uppercase tracking-[0.2em]">Caniço</h3>
+               <div className="h-px bg-[#d4af37] w-12 ml-4"></div>
+            </div>
+            <div className="grid md:grid-cols-3 gap-10">
+              {teamCanico.map((member, i) => (
+                <div key={i} className="group bg-[#0b0b0b] p-6 hover:bg-[#151515] transition-all duration-500 border-t border-transparent hover:border-[#d4af37]">
+                   <div className="h-80 overflow-hidden mb-6 relative">
+                      <img src={member.img} alt={member.name} className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-700" />
+                   </div>
+                   <h4 className="text-xl font-black text-white uppercase mb-2">{member.name}</h4>
+                   <p className="text-[#d4af37] text-xs font-bold tracking-widest mb-4 uppercase">{member.role}</p>
+                   <p className="text-gray-400 text-sm leading-relaxed font-light">{member.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Camacha Team */}
+          <div className="reveal">
+            <div className="flex items-center justify-center mb-12">
+               <div className="h-px bg-[#d4af37] w-12 mr-4"></div>
+               <h3 className="text-2xl font-bold text-white uppercase tracking-[0.2em]">Camacha</h3>
+               <div className="h-px bg-[#d4af37] w-12 ml-4"></div>
+            </div>
+            <div className="grid md:grid-cols-3 gap-10">
+              {teamCamacha.map((member, i) => (
+                <div key={i} className="group bg-[#0b0b0b] p-6 hover:bg-[#151515] transition-all duration-500 border-t border-transparent hover:border-[#d4af37]">
+                   <div className="h-80 overflow-hidden mb-6 relative">
+                      <img src={member.img} alt={member.name} className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-700" />
+                   </div>
+                   <h4 className="text-xl font-black text-white uppercase mb-2">{member.name}</h4>
+                   <p className="text-[#d4af37] text-xs font-bold tracking-widest mb-4 uppercase">{member.role}</p>
+                   <p className="text-gray-400 text-sm leading-relaxed font-light">{member.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* --- SERVIÇOS (Estilo Printscreen) --- */}
+      <section id="servicos" className="py-24 bg-[#0b0b0b]">
+         <div className="container mx-auto px-6 max-w-3xl reveal">
+            <div className="text-center mb-12">
+               <h2 className="text-3xl font-bold uppercase tracking-widest text-white mb-2">Menu de <span className="text-[#d4af37]">Serviços</span></h2>
+               <p className="text-gray-500 text-xs uppercase tracking-widest">Escolhe o teu estilo</p>
+            </div>
+            
+            <div className="bg-[#151515] p-8 rounded-lg border border-gray-800 shadow-2xl">
+               <div className="space-y-6">
+                  {servicesList.map((service, index) => (
+                     <div key={index} className="flex items-center justify-between group cursor-pointer">
+                        <div className="flex items-center gap-4">
+                           <div className="h-10 w-10 bg-[#222] flex items-center justify-center rounded text-gray-400 font-bold group-hover:bg-[#d4af37] group-hover:text-black transition-colors">
+                              {service.name.charAt(0)}
+                           </div>
+                           <div>
+                              <h4 className="font-bold text-gray-200 group-hover:text-[#d4af37] transition-colors">{service.name}</h4>
+                              <span className="text-xs text-gray-500">{service.time}</span>
+                           </div>
+                        </div>
+                        <div className="text-[#d4af37] font-bold">
+                           {service.price}
+                        </div>
+                     </div>
+                  ))}
+               </div>
+            </div>
+         </div>
+      </section>
+
+      {/* --- HORÁRIO & RECRUTAMENTO (Estilo Preto e Branco) --- */}
+      <section className="py-20 bg-white text-black">
+         <div className="container mx-auto px-6">
+            <div className="grid md:grid-cols-2 gap-16">
+               
+               {/* Coluna Horário */}
+               <div className="text-center reveal">
+                  <h2 className="text-5xl font-black mb-6 uppercase tracking-tight">Horário</h2>
+                  
+                  <div className="bg-black text-white py-2 mb-2 font-bold uppercase tracking-widest text-sm">De Segunda a Sexta</div>
+                  <div className="text-6xl font-black mb-6 tracking-tighter">09:30 - 19:00</div>
+
+                  <div className="bg-black text-white py-2 mb-2 font-bold uppercase tracking-widest text-sm">Sábado</div>
+                  <div className="text-6xl font-black mb-6 tracking-tighter">10:00 - 17:00</div>
+
+                  <div className="bg-black text-white py-2 mb-2 font-bold uppercase tracking-widest text-sm">Domingo</div>
+                  <div className="mt-4">
+                     <p className="text-2xl font-bold uppercase border-b-4 border-black inline-block pb-1">No Domingo</p>
+                     <p className="text-2xl font-bold uppercase">Vamos à Missa</p>
+                  </div>
+               </div>
+
+               {/* Coluna CV Form */}
+               <div className="reveal delay-200">
+                  <div className="text-center mb-8">
+                     <h3 className="text-xl font-bold uppercase tracking-widest mb-1">Queres trabalhar connosco?</h3>
+                     <p className="text-sm uppercase text-gray-600">Envia-nos o teu CV!</p>
+                     <ZigZag />
+                  </div>
+                  
+                  <form className="space-y-4">
+                     <input type="text" placeholder="Nome" className="w-full bg-gray-100 p-4 outline-none focus:ring-2 focus:ring-black transition-all text-sm uppercase placeholder:text-gray-400" />
+                     <input type="email" placeholder="Email" className="w-full bg-gray-100 p-4 outline-none focus:ring-2 focus:ring-black transition-all text-sm uppercase placeholder:text-gray-400" />
+                     <input type="text" placeholder="Contacto" className="w-full bg-gray-100 p-4 outline-none focus:ring-2 focus:ring-black transition-all text-sm uppercase placeholder:text-gray-400" />
+                     <input type="file" className="w-full bg-gray-100 p-3 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800" />
+                     <button className="w-full bg-black text-white py-4 font-bold uppercase tracking-[0.2em] hover:bg-[#d4af37] hover:text-black transition-colors">
+                        Enviar
+                     </button>
+                  </form>
+               </div>
+            </div>
+         </div>
+      </section>
+
+      {/* --- GALERIA (Efeitos Visuais) --- */}
+      <section id="galeria" className="py-24 bg-[#111]">
+        <div className="container mx-auto px-6 text-center mb-12 reveal">
+            <h2 className="text-3xl font-bold uppercase tracking-widest text-white">Galeria</h2>
+            <div className="w-20 h-1 bg-[#d4af37] mx-auto mt-4"></div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-0">
+            {galleryImages.map((img, index) => (
+                <div key={index} className="reveal overflow-hidden relative group h-64 md:h-80 cursor-pointer">
+                    <img src={img} alt="Corte" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 filter brightness-75 group-hover:brightness-100 grayscale group-hover:grayscale-0" />
+                    <div className="absolute inset-0 border-[6px] border-[#d4af37] opacity-0 group-hover:opacity-100 transition-opacity duration-300 scale-90 group-hover:scale-100"></div>
+                </div>
+            ))}
+        </div>
+      </section>
+
+      {/* --- CONTACTOS (Cartões Brancos com Mapa) --- */}
+      <section id="contactos" className="py-24 bg-[#0b0b0b] relative">
+        <div className="container mx-auto px-6">
+            <div className="text-center mb-16 reveal">
+               <img src="https://cdn-icons-png.flaticon.com/512/77/77301.png" className="w-10 mx-auto mb-4 invert opacity-50" alt="barber pole"/>
+               <h2 className="text-4xl font-bold text-white uppercase tracking-[0.2em]">Contactos</h2>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-10">
+                {/* Card Caniço */}
+                <div className="bg-white text-black p-8 reveal shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-black"></div>
+                    <h3 className="text-2xl font-black uppercase mb-1">Barbearia J</h3>
+                    <p className="text-sm font-bold uppercase tracking-widest mb-4 text-gray-600">Caniço</p>
+                    <ZigZag />
+                    
+                    {/* IMAGEM ESTATICA - CANIÇO */}
+                    <div className="h-[300px] w-full bg-gray-200 mb-6 grayscale hover:grayscale-0 transition-all duration-500 overflow-hidden rounded-lg">
+                        <img src="https://maps.googleapis.com/maps/api/staticmap?center=32.6416,-16.8500&zoom=15&size=600x300&style=feature:all|element:labels|visibility:off&markers=color:red%7C32.6416,-16.8500&key=AIzaSyDummyKey" alt="Localização Caniço" className="w-full h-full object-cover" />
+                    </div>
+
+                    <p className="text-sm mb-2 font-semibold">Estr. do Garajau BL-2 R/C Loja G</p>
+                    <p className="text-sm mb-6 text-gray-500">9125-067 Caniço, Madeira</p>
+                    <a href="tel:+351291123456" className="text-lg font-black hover:text-[#d4af37] transition-colors">+351 291 123 456</a>
+                </div>
+
+                {/* Card Camacha */}
+                <div className="bg-white text-black p-8 reveal delay-200 shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-black"></div>
+                    <h3 className="text-2xl font-black uppercase mb-1">Barbearia J</h3>
+                    <p className="text-sm font-bold uppercase tracking-widest mb-4 text-gray-600">Camacha</p>
+                    <ZigZag />
+
+                    {/* IMAGEM ESTATICA - CAMACHA */}
+                    <div className="h-[300px] w-full bg-gray-200 mb-6 grayscale hover:grayscale-0 transition-all duration-500 overflow-hidden rounded-lg">
+                        <img src="https://maps.googleapis.com/maps/api/staticmap?center=32.6792,-16.8427&zoom=15&size=600x300&style=feature:all|element:labels|visibility:off&markers=color:red%7C32.6792,-16.8427&key=AIzaSyDummyKey" alt="Localização Camacha" className="w-full h-full object-cover" />
+                    </div>
+
+                    <p className="text-sm mb-2 font-semibold">Shopping Piso 0, Loja 06</p>
+                    <p className="text-sm mb-6 text-gray-500">9135-012 Camacha, Madeira</p>
+                    <a href="tel:+351291123456" className="text-lg font-black hover:text-[#d4af37] transition-colors">+351 291 654 321</a>
+                </div>
+            </div>
+        </div>
+      </section>
+
+      <footer className="py-8 text-center text-gray-600 text-[10px] uppercase tracking-widest border-t border-gray-900 bg-black">
+          © {new Date().getFullYear()} Barbearia J. Todos os direitos reservados.
       </footer>
     </div>
   )
