@@ -1,4 +1,18 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+
+// Corrigir ícone do Leaflet
+const DefaultIcon = L.icon({
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+})
+L.Marker.prototype.setIcon(DefaultIcon)
 
 // IMPORTANTE: Se usares imagem local, importa assim:
 // import bgHero from './assets/bg-barbearia.jpg' 
@@ -32,6 +46,40 @@ const ZigZag = () => (
     <path d="M0 5 L2 0 L4 5 L6 0 L8 5 L10 0 L12 5 L14 0 L16 5 L18 0 L20 5 L22 0 L24 5 L26 0 L28 5 L30 0 L32 5 L34 0 L36 5 L38 0 L40 5 L42 0 L44 5 L46 0 L48 5 L50 0 L52 5 L54 0 L56 5 L58 0 L60 5 L62 0 L64 5 L66 0 L68 5 L70 0 L72 5 L74 0 L76 5 L78 0 L80 5 L82 0 L84 5 L86 0 L88 5 L90 0 L92 5 L94 0 L96 5 L98 0 L100 5" stroke="currentColor" strokeWidth="1" fill="none" vectorEffect="non-scaling-stroke" />
   </svg>
 )
+
+// Componente do Mapa - Usando Leaflet puro (sem react-leaflet)
+const MapComponent = ({ lat, lng, title }) => {
+  const mapRef = useRef(null)
+  const mapInstanceRef = useRef(null)
+
+  useEffect(() => {
+    if (!mapRef.current || mapInstanceRef.current) return
+
+    // Inicializar mapa
+    const map = L.map(mapRef.current).setView([lat, lng], 15)
+
+    // Adicionar tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    }).addTo(map)
+
+    // Adicionar marker
+    L.marker([lat, lng], { icon: DefaultIcon })
+      .bindPopup(title)
+      .addTo(map)
+
+    mapInstanceRef.current = map
+
+    // Cleanup
+    return () => {
+      map.remove()
+      mapInstanceRef.current = null
+    }
+  }, [lat, lng, title])
+
+  return <div ref={mapRef} style={{ height: '300px', width: '100%' }} className="rounded-lg" />
+}
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -308,10 +356,10 @@ export default function App() {
                   <h2 className="text-5xl font-black mb-6 uppercase tracking-tight">Horário</h2>
                   
                   <div className="bg-black text-white py-2 mb-2 font-bold uppercase tracking-widest text-sm">De Segunda a Sexta</div>
-                  <div className="text-6xl font-black mb-6 tracking-tighter">09:30 - 19:00</div>
+                  <div className="text-6xl font-black mb-6 tracking-tighter">10:00 - 19:00</div>
 
                   <div className="bg-black text-white py-2 mb-2 font-bold uppercase tracking-widest text-sm">Sábado</div>
-                  <div className="text-6xl font-black mb-6 tracking-tighter">10:00 - 17:00</div>
+                  <div className="text-6xl font-black mb-6 tracking-tighter">10:00 - 14:00</div>
 
                   <div className="bg-black text-white py-2 mb-2 font-bold uppercase tracking-widest text-sm">Domingo</div>
                   <div className="mt-4">
@@ -362,7 +410,7 @@ export default function App() {
       <section id="contactos" className="py-24 bg-[#0b0b0b] relative">
         <div className="container mx-auto px-6">
             <div className="text-center mb-16 reveal">
-               <img src="https://cdn-icons-png.flaticon.com/512/77/77301.png" className="w-10 mx-auto mb-4 invert opacity-50" alt="barber pole"/>
+               <div className="text-5xl mx-auto mb-4">📍</div>
                <h2 className="text-4xl font-bold text-white uppercase tracking-[0.2em]">Contactos</h2>
             </div>
 
@@ -374,9 +422,9 @@ export default function App() {
                     <p className="text-sm font-bold uppercase tracking-widest mb-4 text-gray-600">Caniço</p>
                     <ZigZag />
                     
-                    {/* IMAGEM ESTATICA - CANIÇO */}
-                    <div className="h-[300px] w-full bg-gray-200 mb-6 grayscale hover:grayscale-0 transition-all duration-500 overflow-hidden rounded-lg">
-                        <img src="https://maps.googleapis.com/maps/api/staticmap?center=32.6416,-16.8500&zoom=15&size=600x300&style=feature:all|element:labels|visibility:off&markers=color:red%7C32.6416,-16.8500&key=AIzaSyDummyKey" alt="Localização Caniço" className="w-full h-full object-cover" />
+                    {/* MAPA LEAFLET - CANIÇO */}
+                    <div className="w-full mb-6 rounded-lg overflow-hidden border-2 border-black">
+                        <MapComponent lat={32.6416} lng={-16.8500} title="Barbearia J - Caniço" />
                     </div>
 
                     <p className="text-sm mb-2 font-semibold">Estr. do Garajau BL-2 R/C Loja G</p>
@@ -391,9 +439,9 @@ export default function App() {
                     <p className="text-sm font-bold uppercase tracking-widest mb-4 text-gray-600">Camacha</p>
                     <ZigZag />
 
-                    {/* IMAGEM ESTATICA - CAMACHA */}
-                    <div className="h-[300px] w-full bg-gray-200 mb-6 grayscale hover:grayscale-0 transition-all duration-500 overflow-hidden rounded-lg">
-                        <img src="https://maps.googleapis.com/maps/api/staticmap?center=32.6792,-16.8427&zoom=15&size=600x300&style=feature:all|element:labels|visibility:off&markers=color:red%7C32.6792,-16.8427&key=AIzaSyDummyKey" alt="Localização Camacha" className="w-full h-full object-cover" />
+                    {/* MAPA LEAFLET - CAMACHA */}
+                    <div className="w-full mb-6 rounded-lg overflow-hidden border-2 border-black">
+                        <MapComponent lat={32.6792} lng={-16.8427} title="Barbearia J - Camacha" />
                     </div>
 
                     <p className="text-sm mb-2 font-semibold">Shopping Piso 0, Loja 06</p>
