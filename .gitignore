@@ -5,3 +5,5 @@
 !tsconfig.json
 
 /node_modules/
+# Dependências (em qualquer pasta)
+node_modules/
